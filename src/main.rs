@@ -101,16 +101,15 @@ impl State {
                                 a: 1.0,
                             }),
                             store: true,
-                        }
-                    }
-                ],
+                        },
+                }],
                 depth_stencil_attachment: None,
             });
         }
 
         self.queue.submit(std::iter::once(encoder.finish()));
 
-        Ok(());
+        Ok(())
     }
 }
 
@@ -147,6 +146,22 @@ fn main() {
                         _ => {}
                     }
                 }
+            }
+
+            Event::RedrawRequested(_) => {
+                state.update();
+                match state.render() {
+                    Ok(_) => {}
+                    // recreate swapchain if lost
+                    Err(wgpu::SwapChainError::Lost) => state.resize(state.size),
+                    // quit if system is out of memory
+                    Err(wgpu::SwapChainError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                    Err(e) => eprintln!("{:?}", e),
+                }
+            }
+
+            Event::MainEventsCleared => {
+                window.request_redraw();
             }
             _ => {}
         }
